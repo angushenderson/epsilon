@@ -4,15 +4,15 @@
 
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>parent</artifactId>
+        <artifactId>epsilon-parent</artifactId>
         <groupId>com.angushenderson</groupId>
         <version>1.0-SNAPSHOT</version>
         <relativePath>../parent/pom.xml</relativePath>
     </parent>
 
-    <artifactId>core</artifactId>
+    <artifactId>epsilon-rest</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <name>core</name>
+    <name>app</name>
     <packaging>jar</packaging>
 
 </project>

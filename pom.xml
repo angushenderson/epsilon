@@ -23,9 +23,9 @@
     </properties>
 
     <modules>
-        <module>parent</module>
-        <module>application</module>
-        <module>core</module>
+        <module>epsilon-parent</module>
+        <module>epsilon-rest</module>
+        <module>epsilon-core</module>
     </modules>
 
 </project>
