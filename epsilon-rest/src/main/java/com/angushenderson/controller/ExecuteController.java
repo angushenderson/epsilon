@@ -1,28 +1,28 @@
 package com.angushenderson.controller;
 
+import com.angushenderson.model.EncodedFile;
+import com.angushenderson.model.ExecutionJob;
+import com.angushenderson.model.RuntimeEnvironment;
+import com.angushenderson.service.KafkaProducerService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
+@RequestMapping(value = "/api")
 public class ExecuteController {
 
     @Autowired
-    private KafkaTemplate<String, String> kafkaTemplate;
+    private KafkaProducerService kafkaProducer;
 
     @PostMapping(value = "/execute")
     public void execute() {
-        kafkaTemplate.send("jobs", "a message")
-                .whenComplete((result, exception) -> {
-                    if (exception == null) {
-                        System.out.println("Sent message=[" + "a message" +
-                                "] with offset=[" + result.getRecordMetadata().offset() + "]");
-                    } else {
-                        System.out.println("Unable to send message=[" +
-                                "a message" + "] due to : " + exception.getMessage());
-                    }
-                });
+        kafkaProducer.send(new ExecutionJob(RuntimeEnvironment.PYTHON3,
+                List.of(new EncodedFile("main.py", "print(\"Hello world!\")".getBytes())),
+                "main.py"));
     }
 
 }
