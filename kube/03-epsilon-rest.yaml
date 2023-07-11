@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: epsilon-rest
+  name: epsilon-rest-service
+  namespace: epsilon
+spec:
+  selector:
+    app: epsilon-rest
+  ports:
+    - protocol: "TCP"
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: epsilon-rest
+  name: epsilon-rest
+  namespace: epsilon
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: epsilon-rest
+  template:
+    metadata:
+      labels:
+        app: epsilon-rest
+    spec:
+      containers:
+        - name: epsilon-rest
+          image: dev.angushenderson/epsilon-rest:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
