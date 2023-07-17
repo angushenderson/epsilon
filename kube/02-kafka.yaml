@@ -8,6 +8,8 @@ metadata:
 spec:
   ports:
     - port: 9092
+      name: kafka-port
+      protocol: TCP
   selector:
     app: kafka-broker
 ---
