@@ -36,3 +36,6 @@ spec:
           imagePullPolicy: Never
           ports:
             - containerPort: 8080
+          env:
+            - name: KAFKA_SERVICE
+              value: kafka-service:9092

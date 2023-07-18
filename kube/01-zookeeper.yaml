@@ -2,15 +2,13 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: zookeeper-service
+    app: zookeeper
   name: zookeeper-service
   namespace: epsilon
 spec:
-  type: NodePort
   ports:
-    - name: zookeeper-port
+    - protocol: TCP
       port: 2181
-      nodePort: 30181
       targetPort: 2181
   selector:
     app: zookeeper
@@ -20,7 +18,7 @@ kind: Deployment
 metadata:
   labels:
     app: zookeeper
-  name: zookeeper
+  name: zookeeper-deployment
   namespace: epsilon
 spec:
   replicas: 1
