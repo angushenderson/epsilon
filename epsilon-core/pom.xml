@@ -11,8 +11,23 @@
     </parent>
 
     <artifactId>epsilon-core</artifactId>
-    <version>1.0-SNAPSHOT</version>
     <name>core</name>
     <packaging>jar</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.angushenderson</groupId>
+            <artifactId>epsilon-common</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
