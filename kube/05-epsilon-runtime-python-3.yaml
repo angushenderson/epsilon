@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: epsilon-runtime-python-3
+  name: epsilon-runtime-python-3
+  namespace: epsilon
+spec:
+#  todo attach autoscaler based on queue size/threshold value
+  replicas: 3
+  selector:
+    matchLabels:
+      app: epsilon-runtime-python-3
+  template:
+    metadata:
+      labels:
+        app: epsilon-runtime-python-3
+    spec:
+      containers:
+        - name: epsilon-runtime-python-3
+          # todo create custom image with custom libraries/permissions etc
+          image: python:3.10-slim-bookworm
+          imagePullPolicy: IfNotPresent
+          command:
+            - "/bin/bash"
+            - "-c"
+            - "--"
+          args:
+            - "while true; do sleep 30; done;"
+          resources:
+            limits:
+              memory: "16M"
+              cpu: "20m"

@@ -19,6 +19,12 @@
             <groupId>com.angushenderson</groupId>
             <artifactId>epsilon-common</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>io.fabric8</groupId>
+            <artifactId>kubernetes-client</artifactId>
+            <version>6.8.0</version>
+        </dependency>
     </dependencies>
 
     <build>
