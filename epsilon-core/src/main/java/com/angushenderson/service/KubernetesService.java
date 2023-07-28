@@ -1,6 +1,7 @@
 package com.angushenderson.service;
 
 import com.angushenderson.enums.RuntimeExecutionStatus;
+import io.fabric8.kubernetes.api.model.ContainerStatus;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
@@ -14,8 +15,6 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -61,7 +60,7 @@ public class KubernetesService {
                         log.info("Pod {}/{} got updated", oldPod.getMetadata().getNamespace(), oldPod.getMetadata().getName());
                         log.info(newPod.getMetadata().getAnnotations().toString());
 
-                        if (newPod.getStatus().getContainerStatuses().get(0).getReady() && "INITIALIZING".equals(newPod.getMetadata().getAnnotations().get("execution_status"))) {
+                        if (newPod.getStatus().getContainerStatuses().stream().filter(ContainerStatus::getReady).count() == 1 && "INITIALIZING".equals(newPod.getMetadata().getAnnotations().get("execution_status"))) {
                             client.pods().inNamespace("epsilon")
                                     .withName(newPod.getMetadata().getName())
                                     .patch(PatchContext.of(PatchType.JSON_MERGE), updateMetadataAnnotation("execution_status", RuntimeExecutionStatus.READY.toString()));

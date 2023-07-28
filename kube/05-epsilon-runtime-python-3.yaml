@@ -15,8 +15,8 @@ spec:
     metadata:
       labels:
         app: epsilon-runtime-python-3
-      annotations:
-        execution_status: INITIALIZING # todo better to manage this all core side?
+#      annotations:
+#        execution_status: INITIALIZING # todo better to manage this all core side?
     spec:
       containers:
         - name: epsilon-runtime-python-3
