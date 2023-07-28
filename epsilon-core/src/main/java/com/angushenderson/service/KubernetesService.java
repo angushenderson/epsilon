@@ -31,11 +31,11 @@ public class KubernetesService {
             // NOTE food for thought: do we keep a central note (db or thread safe equivelant centrally on core; or use "tags" on runtime containers to track state) - annotations in k8s (metadata)
 
             podInformer.addEventHandler(new ResourceEventHandler<Pod>() {
-                private boolean isRuntimeDeploymentPod(Pod pod) {
+                private boolean isNotRuntimeDeploymentPod(Pod pod) {
                     if (pod.getMetadata().getLabels().containsKey("app") && "epsilon".equals(pod.getMetadata().getNamespace())) {
-                        return "epsilon-runtime-python-3".equals(pod.getMetadata().getLabels().get("app"));
+                        return !"epsilon-runtime-python-3".equals(pod.getMetadata().getLabels().get("app"));
                     }
-                    return false;
+                    return true;
                 }
 
                 private String updateMetadataAnnotation(String key, String value) {
@@ -45,26 +45,26 @@ public class KubernetesService {
                 @Override
                 public void onAdd(Pod pod) {
                     // ingres will only occur once until this model then - all actions will be occured under update
-                    if (isRuntimeDeploymentPod(pod)) {
-                        log.info("Pod {}/{} got added", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
+                    if (isNotRuntimeDeploymentPod(pod)) return;
 
-                        client.pods().inNamespace("epsilon")
-                                .withName(pod.getMetadata().getName())
-                                .patch(PatchContext.of(PatchType.JSON_MERGE), updateMetadataAnnotation("execution_status", RuntimeExecutionStatus.INITIALIZING.toString()));
-                    }
+                    log.info("Pod {}/{} got added", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
+
+                    client.pods().inNamespace("epsilon")
+                            .withName(pod.getMetadata().getName())
+                            .patch(PatchContext.of(PatchType.JSON_MERGE), updateMetadataAnnotation("execution_status", RuntimeExecutionStatus.INITIALIZING.toString()));
                 }
 
                 @Override
                 public void onUpdate(Pod oldPod, Pod newPod) {
-                    if (isRuntimeDeploymentPod(newPod)) {
-                        log.info("Pod {}/{} got updated", oldPod.getMetadata().getNamespace(), oldPod.getMetadata().getName());
-                        log.info(newPod.getMetadata().getAnnotations().toString());
+                    if (isNotRuntimeDeploymentPod(newPod)) return;
 
-                        if (newPod.getStatus().getContainerStatuses().stream().filter(ContainerStatus::getReady).count() == 1 && "INITIALIZING".equals(newPod.getMetadata().getAnnotations().get("execution_status"))) {
-                            client.pods().inNamespace("epsilon")
-                                    .withName(newPod.getMetadata().getName())
-                                    .patch(PatchContext.of(PatchType.JSON_MERGE), updateMetadataAnnotation("execution_status", RuntimeExecutionStatus.READY.toString()));
-                        }
+                    log.info("Pod {}/{} got updated", oldPod.getMetadata().getNamespace(), oldPod.getMetadata().getName());
+                    log.info(newPod.getMetadata().getAnnotations().toString());
+
+                    if (newPod.getStatus().getContainerStatuses().stream().filter(ContainerStatus::getReady).count() == 1 && "INITIALIZING".equals(newPod.getMetadata().getAnnotations().get("execution_status"))) {
+                        client.pods().inNamespace("epsilon")
+                                .withName(newPod.getMetadata().getName())
+                                .patch(PatchContext.of(PatchType.JSON_MERGE), updateMetadataAnnotation("execution_status", RuntimeExecutionStatus.READY.toString()));
                     }
                 }
 
