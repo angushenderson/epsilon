@@ -1,5 +1,6 @@
 package com.angushenderson.service;
 
+import com.angushenderson.controller.PodCommandExecutionController;
 import com.angushenderson.enums.RuntimeExecutionStatus;
 import io.fabric8.kubernetes.api.model.ContainerStatus;
 import io.fabric8.kubernetes.api.model.Pod;
@@ -15,12 +16,17 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 @Service
 @Slf4j
 public class KubernetesService {
+
+    private final Set<String> runningPods = Collections.synchronizedSet(new HashSet<>());
 
     @EventListener(ApplicationReadyEvent.class)
     public void test() {
@@ -38,8 +44,8 @@ public class KubernetesService {
                     return true;
                 }
 
-                private String updateMetadataAnnotation(String key, String value) {
-                    return "{\"metadata\":{\"annotations\":{\"" + key + "\":\"" + value + "\"}}}";
+                private String updateMetadataAnnotation(String key, RuntimeExecutionStatus value) {
+                    return "{\"metadata\":{\"annotations\":{\"" + key + "\":\"" + value.toString() + "\"}}}";
                 }
 
                 @Override
@@ -51,20 +57,31 @@ public class KubernetesService {
 
                     client.pods().inNamespace("epsilon")
                             .withName(pod.getMetadata().getName())
-                            .patch(PatchContext.of(PatchType.JSON_MERGE), updateMetadataAnnotation("execution_status", RuntimeExecutionStatus.INITIALIZING.toString()));
+                            .patch(PatchContext.of(PatchType.JSON_MERGE), updateMetadataAnnotation("execution_status", RuntimeExecutionStatus.INITIALIZING));
                 }
 
                 @Override
                 public void onUpdate(Pod oldPod, Pod newPod) {
                     if (isNotRuntimeDeploymentPod(newPod)) return;
 
-                    log.info("Pod {}/{} got updated", oldPod.getMetadata().getNamespace(), oldPod.getMetadata().getName());
-                    log.info(newPod.getMetadata().getAnnotations().toString());
+                    RuntimeExecutionStatus podStatus = RuntimeExecutionStatus.valueOf(newPod.getMetadata().getAnnotations().getOrDefault("execution_status", RuntimeExecutionStatus.UNKNOWN.name()));
 
-                    if (newPod.getStatus().getContainerStatuses().stream().filter(ContainerStatus::getReady).count() == 1 && "INITIALIZING".equals(newPod.getMetadata().getAnnotations().get("execution_status"))) {
+//                    log.info("Pod {}/{} got updated", oldPod.getMetadata().getNamespace(), oldPod.getMetadata().getName());
+
+                    if (newPod.getStatus().getContainerStatuses().stream().filter(ContainerStatus::getReady).count() == 1
+                            && RuntimeExecutionStatus.INITIALIZING.equals(podStatus)) {
                         client.pods().inNamespace("epsilon")
                                 .withName(newPod.getMetadata().getName())
-                                .patch(PatchContext.of(PatchType.JSON_MERGE), updateMetadataAnnotation("execution_status", RuntimeExecutionStatus.READY.toString()));
+                                .patch(PatchContext.of(PatchType.JSON_MERGE), updateMetadataAnnotation("execution_status", RuntimeExecutionStatus.READY));
+                    } else if (RuntimeExecutionStatus.READY.equals(podStatus) && !runningPods.contains(newPod.getMetadata().getName())) {
+                        // todo need to be careful that this allocation/management is done sequentially - can't double allocate coz of threads
+                        runningPods.add(newPod.getMetadata().getName());
+                        updateMetadataAnnotation("execution_status", RuntimeExecutionStatus.RUNNING);
+                        String output = new PodCommandExecutionController(client).execCommandOnPod(newPod, "echo", "\"Hello World!\"");
+                        log.info("Command output: {}", output);
+                        updateMetadataAnnotation("execution_status", RuntimeExecutionStatus.COMPLETE);
+                        client.pods().inNamespace(newPod.getMetadata().getNamespace()).withName(newPod.getMetadata().getName()).delete();
+                        runningPods.remove(newPod.getMetadata().getName());
                     }
                 }
 

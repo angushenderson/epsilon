@@ -4,5 +4,6 @@ public enum RuntimeExecutionStatus {
     INITIALIZING,
     READY,
     RUNNING,
-    COMPLETE
+    COMPLETE,
+    UNKNOWN
 }
