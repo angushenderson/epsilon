@@ -3,37 +3,83 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <artifactId>epsilon-parent</artifactId>
-        <groupId>com.angushenderson</groupId>
-        <version>1.0-SNAPSHOT</version>
-        <relativePath>../epsilon-parent/pom.xml</relativePath>
-    </parent>
-
+    <groupId>com.angushenderson</groupId>
     <artifactId>epsilon-core</artifactId>
+    <version>1.0-SNAPSHOT</version>
     <name>core</name>
     <packaging>jar</packaging>
 
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <exec-maven-plugin.version>3.0.0</exec-maven-plugin.version>
+        <quarkus.version>3.2.4.Final</quarkus.version>
+        <lombok.version>1.18.28</lombok.version>
+        <!--        <jkube.version>1.5.1</jkube.version>-->
+<!--        <jkube.namespace>kubernetes-controller-java</jkube.namespace>-->
+<!--        <jkube.enricher.jkube-namespace.namespace>${jkube.namespace}</jkube.enricher.jkube-namespace.namespace>-->
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-bom</artifactId>
+                <version>${quarkus.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
-            <groupId>com.angushenderson</groupId>
-            <artifactId>epsilon-common</artifactId>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-resteasy</artifactId>
         </dependency>
-
         <dependency>
-            <groupId>io.fabric8</groupId>
-            <artifactId>kubernetes-client</artifactId>
-            <version>6.8.0</version>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-resteasy-jackson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-kubernetes-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
-
     <build>
         <plugins>
             <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-maven-plugin</artifactId>
+                <version>${quarkus.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.eclipse.jkube</groupId>-->
+<!--                <artifactId>kubernetes-maven-plugin</artifactId>-->
+<!--                <version>${jkube.version}</version>-->
+<!--            </plugin>-->
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>native</id>
+            <properties>
+                <quarkus.package.type>native</quarkus.package.type>
+            </properties>
+        </profile>
+    </profiles>
 
 </project>

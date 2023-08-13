@@ -1,10 +1,6 @@
 package com.angushenderson;
 
-import com.angushenderson.model.ExecutionJob;
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.stereotype.Component;
-
-@Component
+//@Component
 public class KafkaConsumer {
 
 //    @KafkaListener(topics = "execution-job-topic")
