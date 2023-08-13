@@ -1,7 +1,7 @@
 package com.angushenderson;
 
 import com.angushenderson.enums.RuntimeExecutionStatus;
-import io.fabric8.kubernetes.api.model.ContainerStatus;
+import com.angushenderson.util.PodUtil;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
@@ -83,14 +83,6 @@ public class CoreSchedulerApplication implements QuarkusApplication {
     @Singleton
     ResourceEventHandler<Pod> podScheduler(SharedIndexInformer<Pod> podInformer) {
       return new ResourceEventHandler<Pod>() {
-        private boolean isNotRuntimeDeploymentPod(Pod pod) {
-          if (pod.getMetadata().getLabels().containsKey("app")
-              && "epsilon".equals(pod.getMetadata().getNamespace())) {
-            return !"epsilon-runtime-python-3".equals(pod.getMetadata().getLabels().get("app"));
-          }
-          return true;
-        }
-
         private void updatePodExecutionStatus(Pod pod, RuntimeExecutionStatus value) {
           client
               .pods()
@@ -103,20 +95,6 @@ public class CoreSchedulerApplication implements QuarkusApplication {
                       + "\"}}}");
         }
 
-        private RuntimeExecutionStatus getPodExecutionStatus(Pod pod) {
-          return RuntimeExecutionStatus.valueOf(
-              pod.getMetadata()
-                  .getAnnotations()
-                  .getOrDefault("execution_status", RuntimeExecutionStatus.UNKNOWN.name()));
-        }
-
-        private boolean isPodReady(Pod pod) {
-          return pod.getStatus().getContainerStatuses().stream()
-                  .filter(ContainerStatus::getReady)
-                  .count()
-              == 1;
-        }
-
         private void deletePod(Pod pod) {
           client.pods()
                   .inNamespace(pod.getMetadata().getNamespace())
@@ -126,7 +104,7 @@ public class CoreSchedulerApplication implements QuarkusApplication {
 
         @Override
         public void onAdd(Pod pod) {
-          if (isNotRuntimeDeploymentPod(pod)) return;
+          if (PodUtil.isNotRuntimeDeploymentPod(pod)) return;
           log.info(
               "Pod {}/{} got ADDED", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
           updatePodExecutionStatus(pod, RuntimeExecutionStatus.INITIALIZING);
@@ -134,12 +112,12 @@ public class CoreSchedulerApplication implements QuarkusApplication {
 
         @Override
         public void onUpdate(Pod oldPod, Pod newPod) {
-          if (isNotRuntimeDeploymentPod(newPod)) return;
+          if (PodUtil.isNotRuntimeDeploymentPod(newPod)) return;
 
-          RuntimeExecutionStatus podStatus = getPodExecutionStatus(newPod);
+          RuntimeExecutionStatus podStatus = PodUtil.getPodExecutionStatus(newPod);
           String podName = newPod.getMetadata().getName();
 
-          if (isPodReady(newPod) && RuntimeExecutionStatus.INITIALIZING.equals(podStatus)) {
+          if (PodUtil.isPodReady(newPod) && RuntimeExecutionStatus.INITIALIZING.equals(podStatus)) {
             updatePodExecutionStatus(newPod, RuntimeExecutionStatus.READY);
           } else if (RuntimeExecutionStatus.READY.equals(podStatus)
               && !runningPods.contains(podName)) {
@@ -159,7 +137,7 @@ public class CoreSchedulerApplication implements QuarkusApplication {
 
         @Override
         public void onDelete(Pod pod, boolean b) {
-          if (isNotRuntimeDeploymentPod(pod)) return;
+          if (PodUtil.isNotRuntimeDeploymentPod(pod)) return;
           log.info(
               "Pod {}/{} got DELETED",
               pod.getMetadata().getNamespace(),
