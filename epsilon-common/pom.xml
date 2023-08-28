@@ -4,15 +4,15 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
+    <artifactId>epsilon-common</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <name>common</name>
+    <packaging>jar</packaging>
+
     <parent>
         <artifactId>epsilon-parent</artifactId>
         <groupId>com.angushenderson</groupId>
         <version>1.0-SNAPSHOT</version>
         <relativePath>../epsilon-parent/pom.xml</relativePath>
     </parent>
-
-    <artifactId>epsilon-common</artifactId>
-    <name>common</name>
-    <packaging>jar</packaging>
-
 </project>
