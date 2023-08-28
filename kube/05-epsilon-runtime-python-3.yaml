@@ -21,6 +21,7 @@ spec:
       containers:
         - name: epsilon-runtime-python-3
           # todo create custom image with custom libraries/permissions etc
+          # todo need to accelerate termination of pod - and initialization
           image: python:3.10-slim-bookworm
           imagePullPolicy: IfNotPresent
           command:

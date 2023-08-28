@@ -27,7 +27,7 @@ import java.util.concurrent.*;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@QuarkusMain
+//@QuarkusMain
 public class CoreSchedulerApplication implements QuarkusApplication {
 
   @Inject KubernetesClient client;

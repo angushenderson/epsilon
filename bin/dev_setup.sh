@@ -21,7 +21,7 @@ kubectl delete all --all --force --grace-period=0
 kubectl delete all --all --force --grace-period=0
 #kubectl delete -f ./kube/03-epsilon-rest.yaml --force
 #kubectl delete -f ./kube/04-epsilon-rest.yaml --force
-kubectl apply -f ./kube/
+kubectl apply -f ./kube/05-epsilon-runtime-python-3.yaml
 kubectl config set-context --current --namespace=epsilon
 #kubectl port-forward deployment/kafka-broker 9092
 

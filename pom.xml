@@ -23,20 +23,20 @@
     </properties>
 
     <modules>
-        <module>epsilon-parent</module>
-        <module>epsilon-common</module>
+<!--        <module>epsilon-parent</module>-->
+<!--        <module>epsilon-common</module>-->
         <module>epsilon-rest</module>
         <module>epsilon-core</module>
     </modules>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>com.angushenderson</groupId>
-                <artifactId>epsilon-common</artifactId>
-                <version>1.0-SNAPSHOT</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+<!--    <dependencyManagement>-->
+<!--        <dependencies>-->
+<!--            <dependency>-->
+<!--                <groupId>com.angushenderson</groupId>-->
+<!--                <artifactId>epsilon-common</artifactId>-->
+<!--                <version>1.0-SNAPSHOT</version>-->
+<!--            </dependency>-->
+<!--        </dependencies>-->
+<!--    </dependencyManagement>-->
 
 </project>

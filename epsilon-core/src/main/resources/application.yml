@@ -1,5 +1,0 @@
-spring:
-  kafka:
-    bootstrap-servers: http://127.0.0.1:58025
-    consumer:
-      group-id: com.angushenderson

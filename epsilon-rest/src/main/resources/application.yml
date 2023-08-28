@@ -1,5 +1,0 @@
-spring:
-  kafka:
-    bootstrap-servers: ${KAFKA_SERVICE}
-    consumer:
-      group-id: com.angushenderson
