@@ -1,4 +1,4 @@
-<!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8"> <title>Quotes</title>
+<!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8"> <title>Epsilon</title>
 
     <link rel="stylesheet" type="text/css"
           href="https://cdnjs.cloudflare.com/ajax/libs/patternfly/3.24.0/css/patternfly.min.css">
@@ -9,21 +9,21 @@
 <div class="container">
     <div class="card">
         <div class="card-body">
-            <h2 class="card-title">Quotes</h2>
-            <button class="btn btn-info" id="request-quote">Request Quote</button>
-            <div class="quotes"></div>
+            <h2 class="card-title">Epsilon</h2>
+            <button class="btn btn-info" id="request-job">Execute Job</button>
+            <div class="jobs"></div>
         </div>
     </div>
 </div>
 </body>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-    $("#request-quote").click((event) => {
+    $("#request-job").click((event) => {
         fetch("/execute", {method: "POST"})
         .then(res => res.text())
-        .then(qid => {
-            var row = $(`<h4 class='col-md-12' id='${qid}'>Quote # <i>${qid}</i> | <strong>Pending</strong></h4>`);
-            $(".quotes").append(row);
+        .then(jid => {
+            var row = $(`<h4 class='col-md-12' id='${jid}'>Job # <i>${jid}</i> | <strong>Pending</strong></h4>`);
+            $(".jobs").append(row);
         });
     });
     var source = new EventSource("/execute");
