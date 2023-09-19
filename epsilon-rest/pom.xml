@@ -21,12 +21,16 @@
             <artifactId>epsilon-common</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-resteasy-reactive-jackson</artifactId>
+            <groupId>org.amqphub.quarkus</groupId>
+            <artifactId>quarkus-qpid-jms</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-smallrye-reactive-messaging-amqp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-resteasy-reactive</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>

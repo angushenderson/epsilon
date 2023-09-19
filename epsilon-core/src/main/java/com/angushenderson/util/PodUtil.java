@@ -6,6 +6,7 @@ import io.fabric8.kubernetes.api.model.Pod;
 
 public class PodUtil {
 
+
     public static boolean isNotRuntimeDeploymentPod(Pod pod) {
         if (pod.getMetadata().getLabels().containsKey("app")
                 && "epsilon".equals(pod.getMetadata().getNamespace())) {

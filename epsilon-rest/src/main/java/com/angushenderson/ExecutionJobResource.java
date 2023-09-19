@@ -1,40 +1,56 @@
 package com.angushenderson;
 
 import com.angushenderson.model.CompletedExecutionJob;
+import com.angushenderson.model.EncodedFile;
+import com.angushenderson.model.ExecutionJobRequest;
+import com.angushenderson.model.RuntimeEnvironment;
 import io.smallrye.mutiny.Multi;
+import jakarta.inject.Inject;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.JMSContext;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+import java.util.List;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.reactive.messaging.Channel;
-import org.eclipse.microprofile.reactive.messaging.Emitter;
-
-import java.util.UUID;
 
 @Path("/execute")
 @Slf4j
 public class ExecutionJobResource {
 
-    @Channel("execution_job_requests")
-    Emitter<String> exeuctionJobEmitter;
+  @Channel("completed_execution_jobs")
+  Multi<CompletedExecutionJob> completedExecutionJobs;
 
-    @Channel("completed_execution_jobs")
-    Multi<CompletedExecutionJob> completedExecutionJobs;
+  @Inject ConnectionFactory connectionFactory;
 
-    @POST
-    @Produces(MediaType.TEXT_PLAIN)
-    public String createRequest() {
-        UUID uuid = UUID.randomUUID();
-        exeuctionJobEmitter.send(uuid.toString());
-        log.info(uuid.toString());
-        return uuid.toString();
+  @POST
+  @Produces(MediaType.TEXT_PLAIN)
+  public String createRequest() {
+    String uuid = UUID.randomUUID().toString(); // todo enforce uniqueness
+    try (JMSContext context = connectionFactory.createContext(JMSContext.AUTO_ACKNOWLEDGE)) {
+      context
+          .createProducer()
+          .send(
+              context.createQueue("execution_job_requests"),
+              context.createObjectMessage(
+                  new ExecutionJobRequest(
+                      uuid,
+                      RuntimeEnvironment.PYTHON3,
+                      List.of(
+                          new EncodedFile("main.py", "print('Genuinely hello world!!')".getBytes())),
+                      "main.py")));
     }
+    log.info(uuid);
+    return uuid;
+  }
 
-    @GET
-    @Produces(MediaType.SERVER_SENT_EVENTS)
-    public Multi<CompletedExecutionJob> stream() {
-        return completedExecutionJobs;
-    }
+  @GET
+  @Produces(MediaType.SERVER_SENT_EVENTS)
+  public Multi<CompletedExecutionJob> stream() {
+    return completedExecutionJobs;
+  }
 }

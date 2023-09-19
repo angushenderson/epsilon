@@ -20,13 +20,17 @@
             <groupId>com.angushenderson</groupId>
             <artifactId>epsilon-common</artifactId>
         </dependency>
-       <dependency>
+        <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-kubernetes-client</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.amqphub.quarkus</groupId>
+            <artifactId>quarkus-qpid-jms</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-smallrye-reactive-messaging-amqp</artifactId>
+            <artifactId>quarkus-resteasy-reactive</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
