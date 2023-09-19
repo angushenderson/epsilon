@@ -26,7 +26,10 @@ public class ExecutionJobResource {
   Multi<CompletedExecutionJob> completedExecutionJobs;
 
   @Inject ConnectionFactory connectionFactory;
-
+// TODO - get data back to client (need to figure out pull vs push vs websocket etc
+//  TODO - add isolation layer to containers with nestybox sysbox
+// TODO - build out api after that, more languages - polish interfaces up etc
+// TODO - could crete a cool ui
   @POST
   @Produces(MediaType.TEXT_PLAIN)
   public String createRequest() {
