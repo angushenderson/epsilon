@@ -4,12 +4,16 @@ import com.angushenderson.WorkerPodJobExecutor;
 import com.angushenderson.WorkerPodObserver;
 import com.angushenderson.model.CompletedExecutionJob;
 import com.angushenderson.model.ExecutionJobRequest;
+import io.quarkus.redis.datasource.RedisDataSource;
+import io.quarkus.redis.datasource.list.KeyValue;
+import io.quarkus.redis.datasource.list.ListCommands;
+import io.quarkus.redis.datasource.pubsub.PubSubCommands;
 import io.quarkus.runtime.ShutdownEvent;
 import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
-import jakarta.jms.*;
+import java.time.Duration;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import lombok.extern.slf4j.Slf4j;
@@ -19,9 +23,15 @@ import lombok.extern.slf4j.Slf4j;
 public class ExecutionJobRequestConsumer implements Runnable {
 
   private final ExecutorService scheduler = Executors.newSingleThreadExecutor();
-  @Inject ConnectionFactory connectionFactory;
+  private final PubSubCommands<CompletedExecutionJob> publisher;
+  private final ListCommands<String, ExecutionJobRequest> queue;
   @Inject WorkerPodObserver workerPodObserver;
   @Inject WorkerPodJobExecutor workerPodJobExecutor;
+
+  public ExecutionJobRequestConsumer(RedisDataSource dataSource) {
+    this.queue = dataSource.list(ExecutionJobRequest.class);
+    this.publisher = dataSource.pubsub(CompletedExecutionJob.class);
+  }
 
   void onStart(@Observes StartupEvent ev) {
     scheduler.submit(this);
@@ -33,28 +43,19 @@ public class ExecutionJobRequestConsumer implements Runnable {
 
   @Override
   public void run() {
-    try (JMSContext context = connectionFactory.createContext(JMSContext.AUTO_ACKNOWLEDGE)) {
-      JMSConsumer consumer = context.createConsumer(context.createQueue("execution_job_requests"));
-      log.info("Consumer listening: {}", consumer.toString());
-      while (true) {
-        if (!workerPodObserver.isWorkerAvailable()) continue;
-        Message message = consumer.receive();
-        if (message == null) return;
-        log.info("PROCESSING MESSAGE {}", message.getJMSMessageID());
-        log.info("doing something");
-        ExecutionJobRequest request = message.getBody(ExecutionJobRequest.class);
-        String output =
-            workerPodJobExecutor.executeJobRequest(
-                request, workerPodObserver.getAvailableWorkerPod());
-        context
-            .createProducer()
-            .send(
-                context.createQueue("completed_execution_jobs"),
-                context.createObjectMessage(
-                    new CompletedExecutionJob(message.getJMSMessageID(), output)));
-      }
-    } catch (JMSException e) {
-      throw new RuntimeException(e);
+    log.info("Consumer listening");
+    while (true) {
+      if (!workerPodObserver.isWorkerAvailable()) continue;
+      KeyValue<String, ExecutionJobRequest> item =
+          queue.brpop(Duration.ofSeconds(1), "execution-job-requests");
+      if (item == null) continue;
+      ExecutionJobRequest request = item.value();
+      log.info("Processing request {}", request.id());
+      String output =
+          workerPodJobExecutor.executeJobRequest(
+              request, workerPodObserver.getAvailableWorkerPod());
+      publisher.publish(
+          "completed-execution-jobs", new CompletedExecutionJob(request.id(), output));
     }
   }
 }

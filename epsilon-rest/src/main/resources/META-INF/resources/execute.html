@@ -20,18 +20,22 @@
 <script>
     $("#request-job").click((event) => {
         fetch("/execute", {method: "POST"})
-        .then(res => res.text())
-        .then(jid => {
-            var row = $(`<h4 class='col-md-12' id='${jid}'>Job # <i>${jid}</i> | <strong>Pending</strong></h4>`);
-            $(".jobs").append(row);
-        });
+            .then(res => res.json())
+            .then(data => {
+                var row = $(`<h4 class='col-md-12' id='${data.id}'>Job # <i>${data.id}</i> | <i>${data.runtimeEnvironment}</i> | <strong>Pending</strong></h4>`);
+                $(".jobs").append(row);
+            });
     });
     var source = new EventSource("/execute");
     source.onmessage = (event) => {
-      var json = JSON.parse(event.data);
-      $(`#${json.id}`).html(function(index, html) {
-        return html.replace("Pending", json.stdout);
-      });
+        var json = JSON.parse(event.data);
+        console.log(json);
+        $(`#${json.id}`).html(function (index, html) {
+            return html.replace("Pending", "Complete");
+        });
+        $(`#${json.id}`).html(function (index, html) {
+            return html + `<strong><i> | Output >>> ${json.output}</i></strong>`;
+        });
     };
 </script>
 </html>

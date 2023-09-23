@@ -28,7 +28,7 @@ public class WorkerPodJobExecutor {
   @Inject WorkerPodObserver workerPodObserver;
 
   public String executeJobRequest(ExecutionJobRequest request, Pod pod) {
-    log.info("Executing job {}", request.getId());
+    log.info("Executing job {}", request.id());
 //    workerPodObserver.removeAvailableWorkerPod(pod.getMetadata().getName());
 
     uploadFilesToPod(request, pod);
@@ -47,7 +47,7 @@ public class WorkerPodJobExecutor {
 
   private void uploadFilesToPod(ExecutionJobRequest request, Pod pod) {
     request
-        .getFiles()
+        .files()
         .forEach(
             encodedFile ->
                 client
@@ -55,8 +55,8 @@ public class WorkerPodJobExecutor {
                     .inNamespace(pod.getMetadata().getNamespace())
                     .withName(pod.getMetadata().getName())
                         // todo get better upload location
-                    .file("/runtime/" + encodedFile.getName())
-                    .upload(new ByteArrayInputStream(encodedFile.getContent())));
+                    .file("/runtime/" + encodedFile.name())
+                    .upload(new ByteArrayInputStream(encodedFile.content())));
   }
 
   private String executeCommandOnPod(Pod pod, String... cmd) throws ExecutionException, InterruptedException, TimeoutException {

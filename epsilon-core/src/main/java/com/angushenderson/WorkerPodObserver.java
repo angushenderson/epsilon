@@ -26,9 +26,6 @@ public class WorkerPodObserver {
   @Inject KubernetesClient client;
 
   public boolean isWorkerAvailable() {
-    if (availableWorkerPods.size() > 0) {
-      System.out.println(availableWorkerPods);
-    }
     return availableWorkerPods.size() > 0;
   }
 
