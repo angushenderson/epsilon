@@ -31,10 +31,7 @@
         var json = JSON.parse(event.data);
         console.log(json);
         $(`#${json.id}`).html(function (index, html) {
-            return html.replace("Pending", "Complete");
-        });
-        $(`#${json.id}`).html(function (index, html) {
-            return html + `<strong><i> | Output >>> ${json.output}</i></strong>`;
+            return html.replace("Pending", "Complete") + `<strong><i> | Output >>> ${json.output}</i></strong>`;
         });
     };
 </script>
